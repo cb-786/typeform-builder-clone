@@ -13,6 +13,13 @@ class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'data' / 'typeform.db'}")
     ALLOWED_ORIGINS: str = "*"
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v: str | None) -> str:
+        if isinstance(v, str) and v.startswith("postgres://"):
+            return v.replace("postgres://", "postgresql://", 1)
+        return v
+
     @property
     def cors_origins(self) -> list[str]:
         val = self.ALLOWED_ORIGINS.strip()
