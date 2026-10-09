@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
+import anime from "animejs";
 
 interface HeroProps {
   activeTab: "intelligent" | "growth" | "research";
@@ -9,32 +11,49 @@ interface HeroProps {
 }
 
 export default function Hero({ activeTab, onSelectTab }: HeroProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (containerRef.current) {
+      const elementsToAnimate = containerRef.current.querySelectorAll('.hero-anim-item');
+      
+      anime({
+        targets: elementsToAnimate,
+        translateY: [30, 0],
+        opacity: [0, 1],
+        duration: 1000,
+        delay: anime.stagger(150),
+        easing: 'easeOutExpo'
+      });
+    }
+  }, []);
+
   return (
-    <section className="relative overflow-hidden pt-16 pb-12 text-center">
+    <section className="relative overflow-hidden pt-16 pb-12 text-center" ref={containerRef}>
       {/* Background radial gradient glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="mx-auto max-w-5xl px-6 relative z-10">
         {/* Pill Badge */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-xs font-semibold tracking-wider text-purple-300 uppercase mb-8">
+        <div className="hero-anim-item opacity-0 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-xs font-semibold tracking-wider text-purple-300 uppercase mb-8">
           <Sparkles className="w-3.5 h-3.5 text-purple-400" />
           AI Forms & Automation
         </div>
 
         {/* Serif Headline */}
-        <h1 className="serif-headline text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-white max-w-4xl mx-auto leading-[1.08] mb-6">
+        <h1 className="hero-anim-item opacity-0 serif-headline text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-white max-w-4xl mx-auto leading-[1.08] mb-6">
           Your favorite forms. <br />
           <span className="italic font-light text-zinc-300">Now with AI automation.</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="max-w-2xl mx-auto text-base sm:text-lg text-zinc-400 font-light leading-relaxed mb-10">
+        <p className="hero-anim-item opacity-0 max-w-2xl mx-auto text-base sm:text-lg text-zinc-400 font-light leading-relaxed mb-10">
           Combine AI forms and automated workflows to drive revenue growth.
           Run in-depth research and manage the entire customer lifecycle. All in Typeform.
         </p>
 
         {/* CTAs */}
-        <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
+        <div className="hero-anim-item opacity-0 flex flex-wrap items-center justify-center gap-4 mb-16">
           <Link
             href="/dashboard"
             className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-black transition-all hover:bg-zinc-200 hover:shadow-xl hover:shadow-purple-500/10 active:scale-95"
@@ -51,7 +70,7 @@ export default function Hero({ activeTab, onSelectTab }: HeroProps) {
         </div>
 
         {/* 3 Flow Switcher Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+        <div className="hero-anim-item opacity-0 grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
           {/* Tab 1: ASK Intelligent Forms */}
           <button
             onClick={() => onSelectTab("intelligent")}

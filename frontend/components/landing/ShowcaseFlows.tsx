@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import anime from "animejs";
 import { 
   Star, 
   Sparkles, 
@@ -72,6 +73,24 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
     return () => clearInterval(timer);
   }, [isPlayingFitCo, isPlayingCall]);
 
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (sectionRef.current) {
+      const elements = sectionRef.current.querySelectorAll('.showcase-anim-item');
+      anime.set(elements, { opacity: 0, translateY: 30 });
+      
+      anime({
+        targets: elements,
+        translateY: [30, 0],
+        opacity: [0, 1],
+        duration: 800,
+        delay: anime.stagger(100),
+        easing: 'easeOutCubic'
+      });
+    }
+  }, [activeTab]);
+
   const formatFitCoTime = (sec: number) => {
     return `00:${sec < 10 ? `0${sec}` : sec}`;
   };
@@ -83,13 +102,13 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
   };
 
   return (
-    <section id="solutions" className="py-20 px-6 max-w-7xl mx-auto">
+    <section id="solutions" className="py-20 px-6 max-w-7xl mx-auto" ref={sectionRef}>
       {/* ---------------- FLOW 1: INTELLIGENT FORMS (VIDEO-SIMULATED FITCO) ---------------- */}
       {activeTab === "intelligent" && (
-        <div className="space-y-16 animate-slide-up">
+        <div className="space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Copy Left */}
-            <div className="lg:col-span-5 text-left space-y-6">
+            <div className="showcase-anim-item lg:col-span-5 text-left space-y-6 opacity-0">
               <div className="inline-flex items-center gap-2">
                 <span className="text-xs font-semibold tracking-wider text-purple-400 uppercase">
                   INTELLIGENT FORMS
@@ -125,7 +144,7 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
             </div>
 
             {/* Dynamic Video Player Simulation Right */}
-            <div className="lg:col-span-7">
+            <div className="showcase-anim-item lg:col-span-7 opacity-0">
               <div className="relative rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-[#1c162c] via-[#121118] to-[#0c0c0f] border border-purple-500/30 overflow-hidden shadow-2xl shadow-purple-950/50">
                 {/* Dynamic Ambient Glow Backdrop */}
                 <div className="absolute -top-20 -right-20 w-96 h-96 bg-purple-600/25 blur-[100px] rounded-full pointer-events-none transition-all duration-700" />
@@ -261,7 +280,7 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
 
           {/* 3 Value Proposition Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-            <div className="p-6 rounded-2xl glass-card space-y-3">
+            <div className="showcase-anim-item p-6 rounded-2xl glass-card space-y-3 opacity-0">
               <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
                 <TrendingUp className="w-5 h-5" />
               </div>
@@ -302,10 +321,10 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
 
       {/* ---------------- FLOW 2: GROWTH FLOW (LIVE PIPELINE SIMULATOR) ---------------- */}
       {activeTab === "growth" && (
-        <div className="space-y-16 animate-slide-up">
+        <div className="space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Dynamic Event Simulator Left */}
-            <div className="lg:col-span-7 order-2 lg:order-1">
+            <div className="showcase-anim-item lg:col-span-7 order-2 lg:order-1 opacity-0">
               <div className="relative rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-[#1a142c] via-[#121118] to-[#0c0c0f] border border-purple-500/30 overflow-hidden shadow-2xl shadow-purple-950/50">
                 {/* Gradient Pulse Background */}
                 <div className="absolute top-0 left-0 w-96 h-96 bg-lime-600/15 blur-[100px] rounded-full pointer-events-none" />
@@ -417,7 +436,7 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
             </div>
 
             {/* Copy Right */}
-            <div className="lg:col-span-5 order-1 lg:order-2 text-left space-y-6">
+            <div className="showcase-anim-item lg:col-span-5 order-1 lg:order-2 text-left space-y-6 opacity-0">
               <div className="inline-flex items-center gap-2">
                 <span className="text-xs font-semibold tracking-wider text-purple-400 uppercase">
                   GROWTH FLOW
@@ -499,10 +518,10 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
 
       {/* ---------------- FLOW 3: RESEARCH FLOW (LIVE AI VIDEO CALL SIMULATOR) ---------------- */}
       {activeTab === "research" && (
-        <div className="space-y-16 animate-slide-up">
+        <div className="space-y-16">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Copy Left */}
-            <div className="lg:col-span-5 text-left space-y-6">
+            <div className="showcase-anim-item lg:col-span-5 text-left space-y-6 opacity-0">
               <div className="inline-flex items-center gap-2">
                 <span className="text-xs font-semibold tracking-wider text-purple-400 uppercase">
                   RESEARCH FLOW
@@ -538,7 +557,7 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
             </div>
 
             {/* Live AI Video Call Simulator Right */}
-            <div className="lg:col-span-7">
+            <div className="showcase-anim-item lg:col-span-7 opacity-0">
               <div className="relative rounded-3xl p-6 sm:p-10 bg-gradient-to-br from-[#1a142e] via-[#111119] to-[#0c0c0f] border border-sky-500/30 overflow-hidden shadow-2xl shadow-sky-950/40">
                 {/* Sky & Purple Mesh Aura */}
                 <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-sky-600/20 blur-[100px] rounded-full pointer-events-none" />
@@ -634,7 +653,7 @@ export default function ShowcaseFlows({ activeTab }: ShowcaseFlowsProps) {
 
           {/* 3 Feature Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-            <div className="p-6 rounded-2xl glass-card space-y-3">
+            <div className="showcase-anim-item p-6 rounded-2xl glass-card space-y-3 opacity-0">
               <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
                 <Lightbulb className="w-5 h-5" />
               </div>

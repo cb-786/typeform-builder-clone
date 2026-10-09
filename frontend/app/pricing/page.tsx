@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import anime from "animejs";
 import Navbar from "@/components/landing/Navbar";
 import {
   Check,
@@ -22,6 +23,21 @@ import {
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"yearly" | "monthly">("yearly");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const elements = containerRef.current.querySelectorAll('.pricing-anim-item');
+      anime({
+        targets: elements,
+        translateY: [30, 0],
+        opacity: [0, 1],
+        duration: 800,
+        delay: anime.stagger(100),
+        easing: 'easeOutQuad'
+      });
+    }
+  }, []);
 
   // Accordion for feature comparison
   const [openComparison, setOpenComparison] = useState<{ [key: string]: boolean }>({
@@ -37,12 +53,12 @@ export default function PricingPage() {
   const isYearly = billingCycle === "yearly";
 
   return (
-    <div className="min-h-screen bg-[#0e0e11] text-white selection:bg-purple-500/30 font-sans">
+    <div className="min-h-screen bg-[#0e0e11] text-white selection:bg-purple-500/30 font-sans" ref={containerRef}>
       <Navbar />
 
       <main className="mx-auto max-w-7xl px-6 py-16">
         {/* Top Header */}
-        <div className="text-center space-y-4 mb-12">
+        <div className="pricing-anim-item opacity-0 text-center space-y-4 mb-12">
           <div className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-4 py-1 text-xs text-purple-300">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Transparent Pricing for Teams of All Sizes</span>
@@ -102,7 +118,7 @@ export default function PricingPage() {
         {/* 4 Pricing Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24">
           {/* 1. BASIC */}
-          <div className="rounded-3xl bg-[#141419] border border-white/10 p-7 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
+          <div className="pricing-anim-item opacity-0 rounded-3xl bg-[#141419] border border-white/10 p-7 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
             <div className="space-y-4">
               <div className="text-xl font-bold text-white">Basic</div>
               <p className="text-xs text-zinc-400 min-h-[36px]">
@@ -154,7 +170,7 @@ export default function PricingPage() {
           </div>
 
           {/* 2. PLUS */}
-          <div className="rounded-3xl bg-[#141419] border border-white/10 p-7 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
+          <div className="pricing-anim-item opacity-0 rounded-3xl bg-[#141419] border border-white/10 p-7 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
             <div className="space-y-4">
               <div className="text-xl font-bold text-white">Plus</div>
               <p className="text-xs text-zinc-400 min-h-[36px]">
@@ -206,7 +222,7 @@ export default function PricingPage() {
           </div>
 
           {/* 3. BUSINESS */}
-          <div className="rounded-3xl bg-[#141419] border border-white/10 p-7 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
+          <div className="pricing-anim-item opacity-0 rounded-3xl bg-[#141419] border border-white/10 p-7 flex flex-col justify-between hover:border-white/20 transition-all shadow-xl">
             <div className="space-y-4">
               <div className="text-xl font-bold text-white">Business</div>
               <p className="text-xs text-zinc-400 min-h-[36px]">
@@ -258,7 +274,7 @@ export default function PricingPage() {
           </div>
 
           {/* 4. GROWTH FLOW (FEATURED WITH BADGE) */}
-          <div className="relative rounded-3xl bg-gradient-to-b from-[#1b152d] via-[#14131d] to-[#0e0e12] border-2 border-purple-500/50 p-7 flex flex-col justify-between shadow-2xl shadow-purple-950/40">
+          <div className="pricing-anim-item opacity-0 relative rounded-3xl bg-gradient-to-b from-[#1b152d] via-[#14131d] to-[#0e0e12] border-2 border-purple-500/50 p-7 flex flex-col justify-between shadow-2xl shadow-purple-950/40">
             {/* Top Pill Badge */}
             <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
               <span className="rounded-full bg-purple-600 text-white font-bold text-[11px] px-3.5 py-1 tracking-wide uppercase shadow-lg shadow-purple-600/50">
@@ -326,7 +342,7 @@ export default function PricingPage() {
         </div>
 
         {/* ---------------- ENTERPRISE SECTION ---------------- */}
-        <section id="enterprise" className="mb-24 rounded-3xl bg-[#121217] border border-white/10 p-8 sm:p-12 relative overflow-hidden">
+        <section id="enterprise" className="pricing-anim-item opacity-0 mb-24 rounded-3xl bg-[#121217] border border-white/10 p-8 sm:p-12 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 blur-[100px] pointer-events-none" />
 
           <div className="max-w-3xl mb-12">
@@ -417,7 +433,7 @@ export default function PricingPage() {
         </section>
 
         {/* ---------------- ADD-ONS & RESEARCH FLOW SHOWCASE ---------------- */}
-        <section className="mb-24 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section className="pricing-anim-item opacity-0 mb-24 grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Add-ons Card */}
           <div className="rounded-3xl bg-[#141419] border border-white/10 p-8 text-left space-y-6">
             <div>
