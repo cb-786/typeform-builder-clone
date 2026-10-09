@@ -55,3 +55,15 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Screenshot & media uploads
+PXL*
+pxl*
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.mp4
+*.mov
+*.gif
+

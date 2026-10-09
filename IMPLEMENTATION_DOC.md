@@ -1,209 +1,264 @@
-# Typeform Fullstack Clone — Architecture & Implementation Document
+# Typeform Fullstack Clone — Master Implementation Document
 
-## 1. Executive Summary & Scope
-
-This project is a high-fidelity, production-grade clone of **Typeform** built to satisfy the **SDE Fullstack Assignment** specification while replicating the signature visual language and interactive feel of the modern Typeform web platform (as documented in the screenshots and assignment markdown).
-
-The project is split into two primary layers:
-1. **Frontend (`/frontend`)**: Next.js (App Router, TypeScript, modern CSS & TailwindCSS tokens) featuring:
-   - **Modern Marketing / Showcase Landing Page**: Sleek dark aesthetic matching the screenshots, dynamic glowing ambient backgrounds, interactive animated micro-demos with 3D perspective tilt, tab switching between feature flows (*ASK*, *ACT*, *LEARN*), social proof, and integration galleries.
-   - **Form Builder**: Drag-and-drop question reordering, question settings sidebar, live split-screen preview, multi-type question engine, and publishing controls.
-   - **Conversational Respondent Flow**: Full-screen, one-question-at-a-time filling experience with smooth directional transitions, keyboard navigation (Enter, Tab, arrows, hotkeys `[A]`, `[B]`, etc.), progress bar, and animated completion screen.
-   - **Responses & Analytics Dashboard**: Submissions table, per-question aggregation charts, individual response viewer, and CSV export.
-2. **Backend (`/backend`)**: Python with **FastAPI** (fast, type-safe with Pydantic v2, async, auto-generating OpenAPI docs):
-   - Clean REST API for Form CRUD, question management, public form retrieval, and response ingestion.
-   - **Database**: SQLite with SQLAlchemy ORM (custom schema designed with foreign keys, cascading deletes, and JSON configuration support).
-   - Database seeding script with pre-populated realistic forms and responses for immediate out-of-the-box demonstration.
-3. **Containerization & Deployment (`docker-compose.yml`, `Dockerfile`s)**:
-   - Full Docker containerization for both frontend and backend, with optional Nginx reverse proxy.
-   - Configured for 100% free-tier public cloud deployment (Render, Koyeb, Fly.io, or Vercel).
+> **Document Status**: Active Implementation Specification  
+> **Source Material**: High-Resolution Product Screenshots (`PXL_*` & `hyprshot`), Official Typeform UX flows, and SDE Fullstack Assignment Requirements.  
+> **Current Focus**: Visual Parity, Mega-Navigation Menus, Video-Simulated Showcase Cards, and Dedicated Pricing Suite.
 
 ---
 
-## 2. Infrastructure & Hosting Analysis: Docker vs. Nginx
+## 1. Executive Summary & Vision
 
-### A. Comparison & Architecture Evaluation
+This project is an enterprise-grade, pixel-accurate clone of **Typeform** built to satisfy the fullstack assignment criteria while matching the modern visual identity and interactive feel of the official Typeform product captured in the uploaded screenshots.
 
-The assignment requires the application to be reviewed live by an evaluator via a hosted link, while also requiring robust Docker containerization.
-
-| Dimension | Standalone Nginx on Host | Bare Host Scripts | **Recommended: Dockerized Services + Free Cloud Hosting** |
-| :--- | :--- | :--- | :--- |
-| **Portability** | Requires installing OS packages, configuring systemd services, and debugging host env mismatches. | High chance of "works on my machine" failures during evaluation. | **100% Reproducible**. A single command `docker compose up --build` launches everything identical to cloud. |
-| **Reverse Proxy (Nginx)** | Hard to configure SSL/certs manually on free cloud tiers. | None. | **Embedded Nginx container**: provides single-origin routing (`/api/*` -> FastAPI, `/*` -> Next.js), eliminating CORS issues. |
-| **Evaluator Experience** | Hard to spin up independently. | Requires installing Python 3.14 + Node 26. | Evaluator can inspect the live web link, OR clone the repo and run `docker compose up`. |
-
-### B. Free-Tier Cloud Hosting Strategy (Free Alternatives for Review)
-
-To ensure the executive/evaluator can immediately access the live demo online at zero cost:
-
-1. **Top Free Tier Option: Koyeb or Render (Native Docker Hosting)**:
-   - **Render**: Free web service tier supporting direct `Dockerfile` deployments. You can deploy the FastAPI backend using Docker for free, and deploy Next.js frontend on Vercel (free, high performance).
-   - **Koyeb**: Offers free Docker container hosting with global edge network and built-in HTTPS domain (`*.koyeb.app`).
-   - **Fly.io**: Free allowance with Docker container deployment via `fly launch`.
-2. **Zero-Configuration Split Hosting (Fastest & Most Reliable Free Setup)**:
-   - **Frontend on Vercel**: Connects directly to GitHub repo with 1 click; gives a free `https://your-typeform.vercel.app` domain with instant Next.js edge performance.
-   - **Backend on Render (Docker)**: Automatically builds `/backend/Dockerfile` on Git push; gives a free `https://your-typeform-api.onrender.com` domain with automated OpenAPI `/docs`.
-   - **Local & VPS**: Fully orchestrated with `docker-compose.yml` (Frontend + Backend + Nginx) for single-command evaluation.
+The application spans two coordinated tiers:
+1. **Frontend (`/frontend`)**: Next.js 16 (App Router, Turbopack, TypeScript, TailwindCSS tokens):
+   - **Hover-Activated Mega-Menus**: Multi-column navigation overlays for *Platform*, *Solutions*, and *Resources* with real-time badges, descriptions, and featured visual cards.
+   - **Video-Centric Animated Hero & Showcase**: Interactive simulation of Typeform's signature landing-page video demonstrations (FitCo dynamic questionnaire player, Growth Flow animated pipeline, Research Flow live AI call with real-time audio spectrum & transcript).
+   - **Dedicated Pricing Experience (`/pricing`)**: 1:1 recreation of the full Typeform pricing matrix, Monthly/Yearly discount logic, 4 plan tiers, 6-card Enterprise suite, Contacts & Automations add-ons, collapsible feature comparison matrix, testimonial banner, and FAQ accordion.
+   - **Form Builder**: Drag-and-drop question ordering, sidebar inspector, live split-screen preview, and multi-question type system.
+   - **Conversational Respondent Flow**: Full-screen one-question-at-a-time experience with keyboard hotkeys, directional slide transitions, and validation.
+   - **Analytics & Submissions Dashboard**: Data tables, response viewer, aggregated metrics, and CSV export.
+2. **Backend (`/backend`)**: Python FastAPI + SQLAlchemy + SQLite:
+   - Robust REST API supporting form lifecycle, drag-and-drop question reordering, public share slugs, submission collection, and analytics aggregation.
+   - Pre-seeded database with realistic forms, sample submissions, and analytical distributions.
+3. **Containerization & Deployment (`docker-compose.yml`)**:
+   - Dockerized frontend and backend with multi-stage builds.
 
 ---
 
-## 3. UI/UX & Visual Design Strategy (Matching Screenshots & Typeform Aesthetics)
+## 2. In-Depth Visual Audit of Uploaded Screenshots
 
-The screenshots exhibit Typeform's signature modern design language:
-- **Dark Elegance**: Deep background `#111113` / `#16161a` with subtle borders `#27272a` and soft lavender / electric purple ambient glow `#8b5cf6`, `#a855f7`, `#ec4899`.
-- **Hero & Landing Showcase**:
-  - Top navigation bar with blurred backdrop (`backdrop-filter: blur(12px)`).
-  - Elegant serif display typography for headlines paired with clean geometric sans-serif for UI (*Inter* or *Outfit*).
-  - Flow tabs (*ASK - Intelligent Forms*, *ACT - Growth Flow*, *LEARN - Research Flow*) with animated progress highlight indicator.
-- **Creative Side Motion Micro-Demos (Zero Load Lag & Crisp 60fps)**:
-  - Interactive, dynamic live UI previews with 3D perspective tilt that respond to cursor movement and automatic subtle breathing animations:
-    - **Intelligent Forms Showcase**: Floating glassmorphic survey cards ("Rate your recent class ★★★★★", floating prompt "Build a feedback form for my fitness studio", live avatar pills).
-    - **Growth Flow Showcase**: Flow step cards ("Enrich contact data", "Contact added to PROSPECT LIST", "Sign up for more classes!").
-    - **Research Flow Showcase**: Interactive AI interview simulation ("How familiar are you with e-bikes?", dynamic pulsating audio wave "Listening...").
-- **Form Builder Experience**:
-  - Three-column layout: Left navigation (Question list & drag-drop reordering), Center workspace (active question editor & live interactive preview tab), Right inspector (required toggle, question settings, help text, choices manager).
-  - Quick action toolbar: Add Question menu with icons for all 8 required types.
-- **Respondent Form-Filling Experience**:
-  - Immersive full-screen experience with no distractions.
-  - Progress bar with completion percentage.
-  - Smooth directional slide/fade transitions: advancing slides up/in, navigating backwards reverses the transition.
-  - Keyboard navigation: `Enter` to submit/advance, `Up`/`Down` or `Shift+Tab`/`Tab` to navigate, hotkeys `A`, `B`, `C`... for multiple choice options.
-  - Instant validation feedback with micro-shake animations on errors.
-  - Celebratory thank-you screen upon submission.
+Every design pattern in this project is directly informed by the photographic captures (`PXL_...` series) and system screenshots.
+
+```
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                           SCREENSHOT AUDIT TAXONOMY                            │
+├───────────────────┬────────────────────────────────────────────────────────────┤
+│ Category          │ Captured In Photos & Elements Mapped                       │
+├───────────────────┼────────────────────────────────────────────────────────────┤
+│ 1. Navigation     │ • PXL_...19750: Platform Mega-Menu (3 columns + 2 cards)   │
+│    Mega-Menus     │ • PXL_...24972: Solutions Mega-Menu (3 cols + bottom bar)  │
+│                   │ • PXL_...29610: Resources Mega-Menu (3 columns + Blog card)│
+├───────────────────┼────────────────────────────────────────────────────────────┤
+│ 2. Video-Centric  │ • ASK Card: FitCo interactive video questionnaire          │
+│    Showcase Cards │ • ACT Card: Growth Flow live event pipeline                │
+│                   │ • LEARN Card: Research Flow AI video call & audio spectrum │
+├───────────────────┼────────────────────────────────────────────────────────────┤
+│ 3. Full Pricing   │ • PXL_...33256: Header, switch, 4 tier cards               │
+│    Suite          │ • PXL_...38241: Enterprise 6-card feature grid             │
+│                   │ • PXL_...43455: Add-ons & Research Flow preview card       │
+│                   │ • PXL_...48102: Interactive comparison matrix accordion    │
+│                   │ • PXL_...53198: Testimonial & FAQ accordion                │
+└───────────────────┴────────────────────────────────────────────────────────────┘
+```
+
+### A. Navigation Mega-Menu Structure
+
+Typeform's header utilizes subtle dark glassmorphism (`rgba(14, 14, 17, 0.95)`, `backdrop-blur-xl`) with hover triggers opening expansive 3-column dropdowns:
+
+#### 1. Platform Dropdown
+- **Column 1 (`PLATFORM`)**:
+  - *Platform overview* — "What is Typeform?"
+  - *Typeform AI* — "Your AI know-pilot"
+  - *Typeform MCP* `[NEW]` — "Use Typeform from your AI tools"
+  - *Growth Flow* `[NEW]` — "Automated workflows for GTM teams"
+  - *Research Flow* `[NEW]` — "AI-moderated research studies"
+  - *Contacts & Automations* — "Automated workflows to grow your business"
+  - *Video engagement* — "Interactive video forms"
+  - *Analytics and reporting* — "Answers you can act on"
+  - *Integrations* — "Connect all your apps"
+- **Column 2 (`TOOLS`)**:
+  - 10 specialized builders: Form builder, Survey maker, Quiz maker, Test maker, Poll builder, Application form builder, Landing page builder, NPS form builder, Registration form builder, Short form builder.
+- **Column 3 (`FEATURED CARDS`)**:
+  - *TEMPLATES Card*: Visual template selector ("Free form, survey, and quiz templates" → "Choose one →").
+  - *RESEARCH FLOW Card*: Video call thumbnail ("Run in-depth AI-moderated studies in hours" → "Learn more →").
+
+#### 2. Solutions Dropdown
+- **Column 1 (`TEAMS`)**: Marketing, Product, Human resources, Customer success.
+- **Column 2 (`USE CASES`)**: Lead generation, Employee onboarding, Employee satisfaction, Employee engagement, Customer feedback, View all use cases →.
+- **Column 3 (`PLANS`)**: Core, Growth `[NEW]`, Research Flow `[NEW]`, Talent, Enterprise.
+- **Bottom Action Bar**:
+  - **ASK**: Intelligent Forms — "Build forms that adapt to every respondent and then analyze your data for rich insights."
+  - **ACT**: Growth Flow `[NEW]` — "Convert and keep customers with automated AI segmentation and follow-ups."
+  - **LEARN**: Research Flow `[NEW]` — "Make confident business decisions fast with AI-moderated studies and automated reports."
+
+#### 3. Resources Dropdown
+- **Column 1 (`SUPPORT`)**: Help center, Community, Contact us.
+- **Column 2 (`COMPANY`)**: Partners, Careers, Webinars.
+- **Column 3 (`BLOG`)**: Featured article card ("Our guides, latest news, and more." → "Browse blog →").
 
 ---
 
-## 4. Database Schema Design (SQLite + SQLAlchemy)
+### B. Video-Centric Landing Page Cards
 
-```mermaid
-erDiagram
-    FORMS ||--o{ QUESTIONS : contains
-    FORMS ||--o{ RESPONSES : receives
-    RESPONSES ||--o{ ANSWERS : includes
-    QUESTIONS ||--o{ ANSWERS : answers_to
+The uploaded images show that Typeform's cards on the homepage are not static text boxes; they represent **live video demonstrations**:
 
-    FORMS {
-        string id PK "UUID"
-        string title
-        string description
-        string status "draft | published"
-        string share_slug UNIQUE
-        string theme_settings "JSON (accent_color, bg_color, font)"
-        datetime created_at
-        datetime updated_at
-    }
+#### 1. FitCo Interactive Video Questionnaire (`ASK`)
+- **Video Player Frame**: Embedded top controls with video badge, playhead timestamp (`00:04 / 00:15`), interactive play/pause button, and animated progress scrubber bar.
+- **Ambient Glow**: Dynamic warm ambient glow reflecting simulated video light onto the card boundaries.
+- **Virtual Respondent Cursor**: Animated floating cursor interacting with the 5-star rating selector ("Rate your recent class ★★★★★").
+- **AI Prompt Floating Pill**: Glassmorphic pill: *"Build a feedback form for my fitness studio"*.
 
-    QUESTIONS {
-        string id PK "UUID"
-        string form_id FK
-        integer order_index
-        string question_type "short_text | long_text | multiple_choice | dropdown | email | number | yes_no | rating"
-        string title
-        string description
-        boolean is_required
-        string options_json "JSON list of options for choice/dropdown"
-        string validation_rules "JSON (min, max, etc.)"
-        datetime created_at
-        datetime updated_at
-    }
+#### 2. Growth Flow Live Automation Pipeline (`ACT`)
+- **Real-Time Lead Stream**: Dynamic stream showing new contacts entering the pipeline (`Alex Mercer • Product Lead`, `Elena Rostova • Head of Growth`).
+- **Connecting Pulse Nodes**: Pulsing gradient paths connecting *Form Submit* → *AI Enrichment* → *Prospect CRM*.
+- **Live Intelligence Pill**: High-intent scoring badge (`VP of Product • TechCorp • 92% Intent`).
+- **Typewriter Follow-Up Email**: Real-time generative email drafting simulating automated outreach.
 
-    RESPONSES {
-        string id PK "UUID"
-        string form_id FK
-        datetime completed_at
-        string respondent_ip_hash
-    }
+#### 3. Research Flow AI Moderated Video Call (`LEARN`)
+- **Video Conference UI**: `● REC 1080p` recording badge, active session duration counter (`04:12`), and participant name tag (`Marcus Vance • Daily Commuter`).
+- **Dynamic Audio Spectrum**: 7-bar bouncing audio equalizer frequency bars reacting mathematically to speech.
+- **Real-Time Live Transcript**: Typewriter stream of respondent feedback: *"I commute 15 miles daily and need a reliable battery..."*
+- **Instant AI Sentiment Analysis**: Tagged pill: `Positive • High Purchase Intent`.
 
-    ANSWERS {
-        string id PK "UUID"
-        string response_id FK
-        string question_id FK
-        string answer_text
-        string answer_json "JSON for complex values"
-        datetime created_at
-    }
+---
+
+### C. Complete Pricing Suite (`/pricing`)
+
+The screenshots (`media_1791520481835.jpg` through `media_1791520747372.jpg` and `media_1791521828997.jpg`) reveal the comprehensive structure of Typeform's official pricing page:
+
+#### 1. Hero & Billing Switcher
+- Headline: *"Get started with AI forms"*.
+- Switch: **Monthly** vs. **Yearly (Save 30%)**.
+- Enterprise banner link: *"Enterprise: 6+ users, SSO, dedicated support → Contact sales"*.
+
+#### 2. The 4 Plan Tier Cards
+1. **Basic**:
+   - Yearly: **$28 USD/mo** (Save $132/yr) | Monthly: **$39 USD/mo**
+   - Subhead: *"Create interactive AI forms that connect to your workflow"*
+   - Features: 100 responses/mo included, 1 user seat, unlimited forms & questions.
+2. **Plus**:
+   - Yearly: **$56 USD/mo** (Save $276/yr) | Monthly: **$79 USD/mo**
+   - Subhead: *"Make your AI forms more beautiful and on-brand"*
+   - Features: 1,000 responses/mo included, 3 user seats, remove Typeform branding, custom subdomain.
+3. **Business**:
+   - Yearly: **$91 USD/mo** (Save $456/yr) | Monthly: **$129 USD/mo**
+   - Subhead: *"Analyze performance with AI and do more with your data"*
+   - Features: 10,000 responses/mo included, 5 user seats, drop-off rates, conversion tracking, priority support.
+4. **Growth Flow** (`Free trial` badge):
+   - Yearly: **$266 0 USD/mo** (266 USD/mo after 14 days) | Monthly: **$349 USD/mo**
+   - Subhead: *"For growing teams that need to automate and streamline their marketing workflows"*
+   - Features: 10,000 responses/mo, unlimited seats, automated AI segmentation, automated sequences.
+
+#### 3. Enterprise Suite (6-Card Grid)
+- Custom responses & seats tailored to org scale.
+- Dedicated VIP account manager & quarterly reviews.
+- Enterprise security: Single Sign-On (SAML/Okta), HIPAA & GDPR compliance, US & EU data residency.
+- Custom domains & white-label branding.
+- Custom team onboarding & workflow architecture.
+- 24/7 Priority support with 99.99% uptime SLA.
+
+#### 4. Add-Ons & Research Flow Showcase
+- **Contacts & Automations Add-on**:
+  - $25 USD/mo for 2,400 automated actions/mo.
+  - $75 USD/mo for 12,000 automated actions/mo.
+  - Custom tier for 50k+ actions.
+- **Research Flow Visual Showcase**:
+  - Video play button overlay with AI participant recruitment metrics.
+
+#### 5. Interactive Collapsible Feature Matrix
+- Collapsible categories:
+  - `Usage limits`: Responses, seats, forms, question limits.
+  - `Be on-brand`: Custom subdomains, remove branding, custom CSS styling, custom fonts.
+  - `Account management`: Roles & permissions, audit logs, invoice billing.
+- Sticky tier headers that remain in view during scroll.
+
+#### 6. Social Proof & FAQ Accordion
+- **Barry's Bootcamp Testimonial**: *"Typeform helped us increase our client booking conversion rate by 42% across 140+ studio locations."* — Joey Gonzalez, CEO.
+- **FAQ Accordion**:
+  - *Can I cancel or change my plan anytime?*
+  - *What happens if I exceed my monthly response limit?*
+  - *How does the 14-day free trial for Growth Flow work?*
+  - *Is there a discount for non-profits or educational institutions?*
+
+---
+
+## 3. What We Can Do About It in This Current Project
+
+To bridge the gap from a functional project to an indistinguishable clone, here is our concrete action inventory:
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                             ACTION INVENTORY & DELIVERABLES                      │
+├─────────────────────────┬──────────────────────────┬─────────────────────────────┤
+│ Feature Area            │ Current State            │ Action in Current Project   │
+├─────────────────────────┼──────────────────────────┼─────────────────────────────┤
+│ Navigation Bar          │ Simple links             │ Full 3-column Mega-Menus    │
+│                         │                          │ with badges, tools & cards  │
+├─────────────────────────┼──────────────────────────┼─────────────────────────────┤
+│ Landing Showcase Cards  │ Static text & cards      │ Video Player Simulator:     │
+│                         │                          │ Scrubber, playhead timer,   │
+│                         │                          │ bouncing audio visualizer,  │
+│                         │                          │ live typewriter transcript  │
+├─────────────────────────┼──────────────────────────┼─────────────────────────────┤
+│ Pricing Route           │ Not implemented          │ Build complete `/pricing`   │
+│                         │                          │ page with 4 tiers, toggle,  │
+│                         │                          │ 6 enterprise cards, matrix  │
+├─────────────────────────┼──────────────────────────┼─────────────────────────────┤
+│ Form Builder            │ Functional 3-column UI   │ Maintain drag-drop & live   │
+│                         │                          │ preview fidelity            │
+├─────────────────────────┼──────────────────────────┼─────────────────────────────┤
+│ Respondent Experience   │ One-at-a-time navigation │ Maintain hotkeys & keyboard │
+│                         │                          │ navigation                  │
+└─────────────────────────┴──────────────────────────┴─────────────────────────────┘
 ```
 
 ---
 
-## 5. Backend REST API Architecture (FastAPI)
+## 4. How We Will Do It: Technical Execution Plan
 
-### Form Management Endpoints (`/api/forms`)
-- `GET /api/forms`: List all forms with status, question count, and submission count.
-- `POST /api/forms`: Create a new form (with default welcome/first question).
-- `GET /api/forms/{form_id}`: Get full form definition including ordered questions.
-- `PUT /api/forms/{form_id}`: Update form metadata (title, description, settings).
-- `POST /api/forms/{form_id}/duplicate`: Duplicate an existing form with its questions.
-- `DELETE /api/forms/{form_id}`: Delete a form and its questions/submissions.
-- `PATCH /api/forms/{form_id}/publish`: Toggle publish state (generate/invalidate share link).
+### Step 1: Upgrading `ShowcaseFlows.tsx` (Video Simulation Engine)
+1. **Interactive Video Controller State**:
+   - `isPlaying` toggle for play/pause.
+   - `currentTime` counter running from `00:00` to `00:15` with auto-loop.
+   - Dynamic scrubber timeline reflecting current playback percentage.
+2. **Audio Spectrum Generator**:
+   - 7 vertical audio frequency bars driven by trigonometric sine wave functions (`Math.sin(time + index) * height`) creating authentic voice-reacting movement.
+3. **Typewriter Transcript Engine**:
+   - Real-time text appending effect for the AI interview live transcription.
+4. **Interactive Lead Flow Pulse**:
+   - Moving gradient indicators along connector lines to show streaming events.
 
-### Question Endpoints (`/api/forms/{form_id}/questions`)
-- `POST /api/forms/{form_id}/questions`: Add a new question.
-- `PUT /api/forms/{form_id}/questions/{question_id}`: Update question details, type, or settings.
-- `DELETE /api/forms/{form_id}/questions/{question_id}`: Delete a question.
-- `PUT /api/forms/{form_id}/questions/reorder`: Update `order_index` for all questions in bulk.
+### Step 2: Implementing `frontend/app/pricing/page.tsx`
+1. **Cadence Switcher State**:
+   - `billingCycle`: `"yearly" | "monthly"` with 30% discount mathematics.
+2. **Dynamic Pricing Data Model**:
+   - Accurate dollar amounts, response counts, user seats, and feature checklists.
+3. **Collapsible Feature Matrix Component**:
+   - Collapsible groups (`Usage limits`, `Be on-brand`, `Account management`) with checkmark / dash indicators across all 4 tiers.
+4. **Enterprise Suite Grid**:
+   - 6 dark glassmorphic cards with icons and descriptions.
+5. **Interactive FAQ Accordion**:
+   - Expandable / collapsible question-answer items with smooth height transitions.
 
-### Public Respondent Endpoints (`/api/public`)
-- `GET /api/public/forms/{share_slug}`: Fetch published form and questions (no authentication required).
-- `POST /api/public/forms/{share_slug}/submit`: Validate answers against schema and store submission.
-
-### Analytics & Results Endpoints (`/api/forms/{form_id}/results`)
-- `GET /api/forms/{form_id}/responses`: List all submissions with timestamp and summary answers.
-- `GET /api/forms/{form_id}/responses/{response_id}`: Detailed view of a single response.
-- `GET /api/forms/{form_id}/analytics`: Aggregated statistics per question (choice distribution counts, average rating/number, total completion rate).
-- `GET /api/forms/{form_id}/export/csv`: Export submissions as CSV format.
-
----
-
-## 6. Frontend Component Architecture (Next.js 15+ App Router)
-
-```
-frontend/
-├── app/
-│   ├── page.tsx                    # Landing Page (Hero, Video/Mesh Cards, Showcase, Tabs)
-│   ├── dashboard/
-│   │   └── page.tsx                # Forms List Dashboard (CRUD, duplicate, status, counts)
-│   ├── builder/
-│   │   └── [formId]/
-│   │       └── page.tsx            # Form Builder (Left list, Center editor/preview, Right settings)
-│   ├── share/
-│   │   └── [slug]/
-│   │       └── page.tsx            # Public Respondent Flow (One-at-a-time, keyboard nav)
-│   └── forms/
-│       └── [formId]/
-│           └── results/
-│               └── page.tsx        # Responses Table & Analytics Dashboard
-├── components/
-│   ├── landing/                    # Hero, AnimatedShowcaseCard, VideoMesh, FlowTabs
-│   ├── builder/                    # QuestionList, QuestionEditor, LivePreview, TypePickerModal
-│   ├── respondent/                 # QuestionCard, KeyboardHelper, ProgressBar, ThankYouScreen
-│   │   └── inputs/                 # ShortTextInput, ChoiceInput, RatingInput, YesNoInput, etc.
-│   ├── dashboard/                  # FormCard, CreateFormModal, StatusBadge
-│   ├── results/                    # SubmissionsTable, StatsOverview, ResponseDetailModal
-│   └── ui/                         # Button, Input, Modal, Dropdown, Toast, GlassCard
-└── lib/
-    ├── api.ts                      # Typed API client for FastAPI backend
-    └── types.ts                    # Shared TypeScript interfaces
-```
+### Step 3: Verification & Compilation
+- Run `npm run build` in `/frontend` to verify strict TypeScript adherence and zero Turbopack compilation errors.
+- Validate responsive layouts across mobile, tablet, and desktop viewports.
 
 ---
 
-## 7. Implementation Roadmap & Milestones
+## 5. Architectural Reference: Backend & Database
 
-- **Milestone 1 (Repo & Foundation)**:
-  - Dockerfiles (`frontend/Dockerfile`, `backend/Dockerfile`) and `docker-compose.yml`.
-  - FastAPI project initialized with SQLAlchemy models, SQLite configuration, and seed data.
-  - Verification test script.
-- **Milestone 2 (Backend Core API)**:
-  - Form CRUD, question reordering, public respondent submission, and analytics endpoints.
-- **Milestone 3 (Landing Page & Design System)**:
-  - Next.js application with dark aesthetic, Google Fonts typography, glowing ambient lighting, and interactive 3D motion micro-demos matching the screenshots.
-- **Milestone 4 (Creator Dashboard & Builder)**:
-  - Dashboard with form metrics and CRUD actions.
-  - Typeform drag-and-drop question builder with live interactive split-screen preview and settings drawer.
-- **Milestone 5 (Respondent Flow)**:
-  - Fullscreen conversational one-question-at-a-time runner with keyboard navigation, directional transitions, validation, and completion screen.
-- **Milestone 6 (Results, Analytics & CSV Export)**:
-  - Submission table, detailed responses drawer, and stats charts.
-- **Milestone 7 (Packaging & Deployment)**:
-  - Docker testing, verification, README documentation, and instructions for free-tier cloud deployment.
+### A. Database Schema (SQLite + SQLAlchemy)
+- `forms`: `id (UUID)`, `title`, `description`, `status (draft|published)`, `share_slug`, `theme_settings (JSON)`, `created_at`, `updated_at`.
+- `questions`: `id (UUID)`, `form_id (FK)`, `order_index`, `question_type`, `title`, `description`, `is_required`, `options_json (JSON)`, `validation_rules (JSON)`.
+- `responses`: `id (UUID)`, `form_id (FK)`, `completed_at`, `respondent_ip_hash`.
+- `answers`: `id (UUID)`, `response_id (FK)`, `question_id (FK)`, `answer_text`, `answer_json`.
+
+### B. REST API Endpoints
+- `GET /api/forms`, `POST /api/forms`, `GET /api/forms/{id}`, `PUT /api/forms/{id}`, `DELETE /api/forms/{id}`, `POST /api/forms/{id}/duplicate`, `PATCH /api/forms/{id}/publish`.
+- `POST /api/forms/{id}/questions`, `PUT /api/forms/{id}/questions/{qid}`, `DELETE /api/forms/{id}/questions/{qid}`, `PUT /api/forms/{id}/questions/reorder`.
+- `GET /api/public/forms/{slug}`, `POST /api/public/forms/{slug}/submit`.
+- `GET /api/forms/{id}/responses`, `GET /api/forms/{id}/analytics`, `GET /api/forms/{id}/export/csv`.
+
+---
+
+## 6. Execution Timeline & Next Milestones
+
+| Phase | Description | Status |
+| :--- | :--- | :--- |
+| **Phase 1** | Hover Mega-Menus in `Navbar.tsx` | Completed |
+| **Phase 2** | Implementation Document Revision | Completed |
+| **Phase 3** | Video-Centric Landing Card Upgrades in `ShowcaseFlows.tsx` | In Progress |
+| **Phase 4** | Complete Dedicated `/pricing` Route Implementation | In Progress |
+| **Phase 5** | Frontend Production Build Validation (`npm run build`) | Scheduled |
