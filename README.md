@@ -4,10 +4,17 @@
   <p>A pixel-perfect, highly dynamic, and full-stack implementation of a conversational form builder.</p>
 
   <p>
+    <a href="https://typeform-builder-clone-k35hy6duw.vercel.app/" target="_blank">
+      <img src="https://img.shields.io/badge/Live_Demo-Visit_App-success?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" />
+    </a>
     <img src="https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" />
     <img src="https://img.shields.io/badge/FastAPI-0.104.1-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/PostgreSQL-Neon-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
     <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  </p>
+
+  <p>
+    🌐 <strong>Live URL:</strong> <a href="https://typeform-builder-clone-k35hy6duw.vercel.app/">https://typeform-builder-clone-k35hy6duw.vercel.app/</a>
   </p>
 </div>
 
@@ -19,11 +26,18 @@
 - **Respondent Flow**: Conversational, one-question-at-a-time live form filling with keyboard hotkeys, validation, and auto-scrolling.
 - **Analytics Dashboard**: Inspect results, manage form lifecycles (Draft/Publish), and share unique URLs.
 - **Pixel-Perfect UI**: Glassmorphism, tailored animations (via Anime.js), continuous marquees, and a dark-mode-first aesthetic identical to modern SaaS tools.
-- **Dockerized**: Lightning-fast setup with a single command.
+- **Dockerized & Cloud Deployed**: Run locally with a single docker command or access the live cloud deployment.
 
 ---
 
-## 🚀 Setup Instructions
+## 🌐 Live Demo & Deployment
+
+- **Frontend (Vercel)**: [https://typeform-builder-clone-k35hy6duw.vercel.app/](https://typeform-builder-clone-k35hy6duw.vercel.app/)
+- **Backend (Render + Neon PostgreSQL)**: Hosted & connected via FastAPI.
+
+---
+
+## 🚀 Local Setup Instructions
 
 This project is fully containerized with Docker, making setup a breeze.
 
@@ -33,7 +47,7 @@ This project is fully containerized with Docker, making setup a breeze.
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/typeform-builder-clone.git
+git clone https://github.com/cb-786/typeform-builder-clone.git
 cd typeform-builder-clone
 ```
 
