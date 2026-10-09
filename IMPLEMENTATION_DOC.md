@@ -5,8 +5,8 @@
 This project is a high-fidelity, production-grade clone of **Typeform** built to satisfy the **SDE Fullstack Assignment** specification while replicating the signature visual language and interactive feel of the modern Typeform web platform (as documented in the screenshots and assignment markdown).
 
 The project is split into two primary layers:
-1. **Frontend (`/frontend`)**: Next.js (App Router, TypeScript, Vanilla CSS + Tailwind/CSS Modules) featuring:
-   - **Modern Marketing / Showcase Landing Page**: Sleek dark aesthetic matching the screenshots, dynamic glowing ambient backgrounds, interactive animated video/motion cards with 3D perspective, tab switching between feature flows (*ASK*, *ACT*, *LEARN*), social proof, and integration galleries.
+1. **Frontend (`/frontend`)**: Next.js (App Router, TypeScript, modern CSS & TailwindCSS tokens) featuring:
+   - **Modern Marketing / Showcase Landing Page**: Sleek dark aesthetic matching the screenshots, dynamic glowing ambient backgrounds, interactive animated micro-demos with 3D perspective tilt, tab switching between feature flows (*ASK*, *ACT*, *LEARN*), social proof, and integration galleries.
    - **Form Builder**: Drag-and-drop question reordering, question settings sidebar, live split-screen preview, multi-type question engine, and publishing controls.
    - **Conversational Respondent Flow**: Full-screen, one-question-at-a-time filling experience with smooth directional transitions, keyboard navigation (Enter, Tab, arrows, hotkeys `[A]`, `[B]`, etc.), progress bar, and animated completion screen.
    - **Responses & Analytics Dashboard**: Submissions table, per-question aggregation charts, individual response viewer, and CSV export.
@@ -14,33 +14,36 @@ The project is split into two primary layers:
    - Clean REST API for Form CRUD, question management, public form retrieval, and response ingestion.
    - **Database**: SQLite with SQLAlchemy ORM (custom schema designed with foreign keys, cascading deletes, and JSON configuration support).
    - Database seeding script with pre-populated realistic forms and responses for immediate out-of-the-box demonstration.
+3. **Containerization & Deployment (`docker-compose.yml`, `Dockerfile`s)**:
+   - Full Docker containerization for both frontend and backend, with optional Nginx reverse proxy.
+   - Configured for 100% free-tier public cloud deployment (Render, Koyeb, Fly.io, or Vercel).
 
 ---
 
 ## 2. Infrastructure & Hosting Analysis: Docker vs. Nginx
 
-The prompt specifically asked: *"tell me in the doc if we should use nginx or docker as well because we will need to host it as well so if it would be easier"*.
+### A. Comparison & Architecture Evaluation
 
-### A. Comparison Matrix
+The assignment requires the application to be reviewed live by an evaluator via a hosted link, while also requiring robust Docker containerization.
 
-| Aspect | Standalone Nginx on Host | Docker Containerization | **Recommended: Docker Compose + Nginx Reverse Proxy** |
+| Dimension | Standalone Nginx on Host | Bare Host Scripts | **Recommended: Dockerized Services + Free Cloud Hosting** |
 | :--- | :--- | :--- | :--- |
-| **Portability** | Low. Host OS must have Python 3.14+, Node.js, and Nginx installed manually. | High. Any server with Docker can run the entire stack with `docker compose up`. | **Highest**. Single command spins up Frontend, Backend, and Nginx gateway. |
-| **Hosting Deployment** | High effort. Requires configuring systemd services for FastAPI and Next.js, firewall rules, and certbot on the bare VPS. | Low effort on container platforms (Render, Railway, Fly.io, or any $5 VPS). | **Lowest friction**. One Git push or `docker compose up -d` on any cloud VPS (Ubuntu, Debian, EC2, etc.). |
-| **CORS & Domain Routing** | Must configure separate domains or host Nginx manually. | Backend and Frontend run on separate ports, requiring CORS headers across origins. | **Unified Domain**: Nginx routes `/api/*` to FastAPI (`:8000`) and `/*` to Next.js (`:3000`), completely eliminating cross-origin CORS hurdles and SSL certificate complexity. |
-| **SQLite Persistence** | Local file on host. | Mounted via Docker volume to prevent data loss across restarts. | Mounted via Docker volume (`./backend/data/typeform.db:/app/data/typeform.db`). |
+| **Portability** | Requires installing OS packages, configuring systemd services, and debugging host env mismatches. | High chance of "works on my machine" failures during evaluation. | **100% Reproducible**. A single command `docker compose up --build` launches everything identical to cloud. |
+| **Reverse Proxy (Nginx)** | Hard to configure SSL/certs manually on free cloud tiers. | None. | **Embedded Nginx container**: provides single-origin routing (`/api/*` -> FastAPI, `/*` -> Next.js), eliminating CORS issues. |
+| **Evaluator Experience** | Hard to spin up independently. | Requires installing Python 3.14 + Node 26. | Evaluator can inspect the live web link, OR clone the repo and run `docker compose up`. |
 
-### B. Final Recommendation & Hosting Strategy
+### B. Free-Tier Cloud Hosting Strategy (Free Alternatives for Review)
 
-**We recommend Docker containerization with a lightweight Docker Compose setup (Next.js + FastAPI + optional Nginx reverse proxy):**
-1. **Local Development**:
-   - Run directly: `npm run dev` for frontend, `uvicorn app.main:app --reload` for backend.
-2. **Production Hosting Options**:
-   - **Option 1 (Easiest Cloud PaaS — Zero DevOps)**:
-     - Deploy **Frontend** on **Vercel** (connects directly to GitHub repo, instant Next.js SSR, free tier).
-     - Deploy **Backend** on **Render** or **Railway** (uses backend `Dockerfile`, free/low-cost Python hosting with persistent SQLite disk).
-   - **Option 2 (Single VPS / Cloud Server with Docker Compose)**:
-     - A single `docker-compose.yml` defining `frontend`, `backend`, and `nginx:alpine` routing port 80/443. All services start in isolation with persistent SQLite volume.
+To ensure the executive/evaluator can immediately access the live demo online at zero cost:
+
+1. **Top Free Tier Option: Koyeb or Render (Native Docker Hosting)**:
+   - **Render**: Free web service tier supporting direct `Dockerfile` deployments. You can deploy the FastAPI backend using Docker for free, and deploy Next.js frontend on Vercel (free, high performance).
+   - **Koyeb**: Offers free Docker container hosting with global edge network and built-in HTTPS domain (`*.koyeb.app`).
+   - **Fly.io**: Free allowance with Docker container deployment via `fly launch`.
+2. **Zero-Configuration Split Hosting (Fastest & Most Reliable Free Setup)**:
+   - **Frontend on Vercel**: Connects directly to GitHub repo with 1 click; gives a free `https://your-typeform.vercel.app` domain with instant Next.js edge performance.
+   - **Backend on Render (Docker)**: Automatically builds `/backend/Dockerfile` on Git push; gives a free `https://your-typeform-api.onrender.com` domain with automated OpenAPI `/docs`.
+   - **Local & VPS**: Fully orchestrated with `docker-compose.yml` (Frontend + Backend + Nginx) for single-command evaluation.
 
 ---
 
@@ -50,20 +53,20 @@ The screenshots exhibit Typeform's signature modern design language:
 - **Dark Elegance**: Deep background `#111113` / `#16161a` with subtle borders `#27272a` and soft lavender / electric purple ambient glow `#8b5cf6`, `#a855f7`, `#ec4899`.
 - **Hero & Landing Showcase**:
   - Top navigation bar with blurred backdrop (`backdrop-filter: blur(12px)`).
-  - Elegant serif display typography for headlines (*Playfair Display* / *Newsreader* / *Fraunces* or Google Fonts equivalent) paired with clean geometric sans-serif for UI (*Inter* or *Outfit*).
+  - Elegant serif display typography for headlines paired with clean geometric sans-serif for UI (*Inter* or *Outfit*).
   - Flow tabs (*ASK - Intelligent Forms*, *ACT - Growth Flow*, *LEARN - Research Flow*) with animated progress highlight indicator.
-- **Side "Videos" & Interactive Motion Visuals (Being Creative)**:
-  - In Typeform's marketing site, side video showcases demonstrate interactive forms and AI enrichments with floating cards and smooth glowing motion.
-  - **Creative Implementation**:
-    - We will build **dynamic, interactive interactive visual canvases**: high-frame-rate CSS/SVG keyframe-animated floating glassmorphic cards (e.g. "Rate your recent class ★★★★★", "Enrich contact data", "AI Listening...").
-    - Option to embed high-quality lightweight looping WebM/MP4 video backgrounds or animated SVG/Canvas mesh gradients with realistic floating UI overlays that react to cursor movement (parallax 3D tilt).
+- **Creative Side Motion Micro-Demos (Zero Load Lag & Crisp 60fps)**:
+  - Interactive, dynamic live UI previews with 3D perspective tilt that respond to cursor movement and automatic subtle breathing animations:
+    - **Intelligent Forms Showcase**: Floating glassmorphic survey cards ("Rate your recent class ★★★★★", floating prompt "Build a feedback form for my fitness studio", live avatar pills).
+    - **Growth Flow Showcase**: Flow step cards ("Enrich contact data", "Contact added to PROSPECT LIST", "Sign up for more classes!").
+    - **Research Flow Showcase**: Interactive AI interview simulation ("How familiar are you with e-bikes?", dynamic pulsating audio wave "Listening...").
 - **Form Builder Experience**:
   - Three-column layout: Left navigation (Question list & drag-drop reordering), Center workspace (active question editor & live interactive preview tab), Right inspector (required toggle, question settings, help text, choices manager).
   - Quick action toolbar: Add Question menu with icons for all 8 required types.
 - **Respondent Form-Filling Experience**:
   - Immersive full-screen experience with no distractions.
-  - Progress bar at the top or bottom with completion percentage.
-  - Smooth directional slide/fade transitions: advancing slides up/left, navigating backwards reverses the transition.
+  - Progress bar with completion percentage.
+  - Smooth directional slide/fade transitions: advancing slides up/in, navigating backwards reverses the transition.
   - Keyboard navigation: `Enter` to submit/advance, `Up`/`Down` or `Shift+Tab`/`Tab` to navigate, hotkeys `A`, `B`, `C`... for multiple choice options.
   - Instant validation feedback with micro-shake animations on errors.
   - Celebratory thank-you screen upon submission.
@@ -185,48 +188,22 @@ frontend/
 
 ---
 
-## 7. Step-by-Step Implementation Roadmap
+## 7. Implementation Roadmap & Milestones
 
-### Phase 1: Repository & Foundation Setup
-- [x] Initialize Git repository on `main` branch.
-- [ ] Create project structure: `/frontend`, `/backend`, `docker-compose.yml`, `.gitignore`.
-- [ ] Backend foundation: FastAPI project setup with SQLite database connection, SQLAlchemy models, and Alembic/schema init.
-- [ ] Seed script: Pre-fill database with sample forms and mock respondent submissions.
-
-### Phase 2: Backend Core API Implementation
-- [ ] Implement CRUD endpoints for forms and question reordering.
-- [ ] Implement public form retrieval and response submission with server-side validation.
-- [ ] Implement analytics aggregation and CSV export endpoints.
-- [ ] Write integration test verification script for all endpoints.
-
-### Phase 3: Frontend Foundation & Landing Page
-- [ ] Initialize Next.js project with App Router, TypeScript, and TailwindCSS / modern CSS tokens.
-- [ ] Build the Typeform-style landing page with dark theme, ambient glow, navigation, interactive side motion cards (creative animated video/card showcases), and flow tabs.
-
-### Phase 4: Creator Dashboard & Form Builder
-- [ ] Creator dashboard with form cards, status badges, response counts, duplicate/delete/rename modals.
-- [ ] Form builder interface:
-  - Drag-and-drop question reordering (using lightweight HTML5 drag-and-drop or `@dnd-kit`).
-  - Question editor supporting all 8 question types with live validation.
-  - Per-question settings drawer (is_required, help text, option manager).
-  - Real-time live preview tab.
-  - Share link modal with copy-to-clipboard functionality.
-
-### Phase 5: Respondent Flow (The Signature Typeform Experience)
-- [ ] Full-screen respondent layout with zero distractions.
-- [ ] Directional view transition animations between questions (up/down or slide transitions).
-- [ ] Keyboard navigation handling (`Enter`, `Tab`, arrow keys, letter keys for choices).
-- [ ] Client-side validation before advancing to the next question.
-- [ ] Thank-you screen with animated completion checkmark.
-
-### Phase 6: Results, Analytics & Polish
-- [ ] Responses table with timestamp, pagination, and expandable detail view.
-- [ ] Question summary statistics (choice breakdown percentages, average ratings).
-- [ ] CSV export download.
-- [ ] Toast notification system for user actions (form saved, link copied, errors).
-
-### Phase 7: Containerization & Deployment Documentation
-- [ ] Multi-stage `Dockerfile` for Next.js frontend.
-- [ ] `Dockerfile` for FastAPI backend.
-- [ ] `docker-compose.yml` orchestrating frontend, backend, and Nginx.
-- [ ] Comprehensive `README.md` with architecture diagrams, schema details, local run instructions, and cloud deployment guide (Vercel + Render/Railway).
+- **Milestone 1 (Repo & Foundation)**:
+  - Dockerfiles (`frontend/Dockerfile`, `backend/Dockerfile`) and `docker-compose.yml`.
+  - FastAPI project initialized with SQLAlchemy models, SQLite configuration, and seed data.
+  - Verification test script.
+- **Milestone 2 (Backend Core API)**:
+  - Form CRUD, question reordering, public respondent submission, and analytics endpoints.
+- **Milestone 3 (Landing Page & Design System)**:
+  - Next.js application with dark aesthetic, Google Fonts typography, glowing ambient lighting, and interactive 3D motion micro-demos matching the screenshots.
+- **Milestone 4 (Creator Dashboard & Builder)**:
+  - Dashboard with form metrics and CRUD actions.
+  - Typeform drag-and-drop question builder with live interactive split-screen preview and settings drawer.
+- **Milestone 5 (Respondent Flow)**:
+  - Fullscreen conversational one-question-at-a-time runner with keyboard navigation, directional transitions, validation, and completion screen.
+- **Milestone 6 (Results, Analytics & CSV Export)**:
+  - Submission table, detailed responses drawer, and stats charts.
+- **Milestone 7 (Packaging & Deployment)**:
+  - Docker testing, verification, README documentation, and instructions for free-tier cloud deployment.
