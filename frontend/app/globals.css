@@ -143,6 +143,21 @@
   animation: slideInDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+@theme {
+  --animate-marquee-left: marqueeLeft 40s linear infinite;
+  --animate-marquee-right: marqueeRight 40s linear infinite;
+
+  @keyframes marqueeLeft {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  @keyframes marqueeRight {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

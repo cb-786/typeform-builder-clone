@@ -6,6 +6,22 @@ import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { Form, Question, QuestionType } from "@/lib/types";
 import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
   ArrowLeft,
   Eye,
   Share2,
@@ -39,6 +55,88 @@ const QUESTION_TYPE_LABELS: Record<QuestionType, { label: string; icon: any; def
   rating: { label: "Rating", icon: Star, defaultTitle: "How would you rate this?" },
 };
 
+interface SortableQuestionItemProps {
+  question: Question;
+  index: number;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  onMove: (index: number, direction: "up" | "down") => void;
+}
+
+function SortableQuestionItem({ question, index, isSelected, onSelect, onMove }: SortableQuestionItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const info = QUESTION_TYPE_LABELS[question.question_type] || QUESTION_TYPE_LABELS.short_text;
+  const Icon = info.icon;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={() => onSelect(question.id)}
+      className={`group relative flex items-center gap-2 p-2.5 rounded-xl border text-left cursor-grab active:cursor-grabbing transition-all ${
+        isSelected
+          ? "bg-purple-950/20 border-purple-500/40 text-white shadow-sm"
+          : "bg-[#18181d] border-transparent text-zinc-400 hover:bg-[#1f1f26] hover:text-zinc-200"
+      }`}
+    >
+      <div className="p-1 text-zinc-600 hover:text-zinc-400">
+        <GripVertical className="w-3.5 h-3.5" />
+      </div>
+
+      <span className="w-5 text-center text-xs font-bold text-zinc-500">
+        {index + 1}
+      </span>
+
+      <div
+        className={`p-1.5 rounded-lg ${
+          isSelected ? "bg-purple-500/20 text-purple-300" : "bg-black/30 text-zinc-400"
+        }`}
+      >
+        <Icon className="w-3.5 h-3.5" />
+      </div>
+
+      <span className="flex-1 text-xs font-medium truncate">
+        {question.title || "Untitled question"}
+      </span>
+
+      <div className="opacity-0 group-hover:opacity-100 flex items-center transition-opacity">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMove(index, "up");
+          }}
+          className="p-1 hover:text-white"
+        >
+          <ChevronUp className="w-3 h-3" />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onMove(index, "down");
+          }}
+          className="p-1 hover:text-white"
+        >
+          <ChevronDown className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FormBuilderContent() {
   const routeParams = useParams();
   const formId = routeParams?.formId as string;
@@ -64,6 +162,40 @@ function FormBuilderContent() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: any) => {
+    const { active, over } = event;
+    if (!form || !over) return;
+
+    if (active.id !== over.id) {
+      const oldIndex = form.questions.findIndex((q) => q.id === active.id);
+      const newIndex = form.questions.findIndex((q) => q.id === over.id);
+
+      const list = [...form.questions];
+      const reordered = arrayMove(list, oldIndex, newIndex).map((q, idx) => ({
+        ...q,
+        order_index: idx,
+      }));
+
+      setForm({ ...form, questions: reordered });
+
+      try {
+        await api.reorderQuestions(
+          formId,
+          reordered.map((q) => ({ id: q.id, order_index: q.order_index }))
+        );
+      } catch (err) {
+        console.error("Reorder failed", err);
+      }
     }
   };
 
@@ -318,66 +450,27 @@ function FormBuilderContent() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
-            {form.questions.map((q, idx) => {
-              const info = QUESTION_TYPE_LABELS[q.question_type] || QUESTION_TYPE_LABELS.short_text;
-              const Icon = info.icon;
-              const isSelected = q.id === selectedQuestionId;
-
-              return (
-                <div
-                  key={q.id}
-                  onClick={() => setSelectedQuestionId(q.id)}
-                  className={`group relative flex items-center gap-2 p-2.5 rounded-xl border text-left cursor-pointer transition-all ${
-                    isSelected
-                      ? "bg-purple-950/20 border-purple-500/40 text-white shadow-sm"
-                      : "bg-[#18181d] border-transparent text-zinc-400 hover:bg-[#1f1f26] hover:text-zinc-200"
-                  }`}
-                >
-                  {/* Question Number Badge */}
-                  <span className="w-5 text-center text-xs font-bold text-zinc-500">
-                    {idx + 1}
-                  </span>
-
-                  {/* Question Type Icon */}
-                  <div
-                    className={`p-1.5 rounded-lg ${
-                      isSelected ? "bg-purple-500/20 text-purple-300" : "bg-black/30 text-zinc-400"
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                  </div>
-
-                  {/* Title Preview */}
-                  <span className="flex-1 text-xs font-medium truncate">
-                    {q.title || "Untitled question"}
-                  </span>
-
-                  {/* Up / Down Reorder Arrows */}
-                  <div className="opacity-0 group-hover:opacity-100 flex items-center transition-opacity">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMoveQuestion(idx, "up");
-                      }}
-                      disabled={idx === 0}
-                      className="p-1 hover:text-white disabled:opacity-20"
-                    >
-                      <ChevronUp className="w-3 h-3" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMoveQuestion(idx, "down");
-                      }}
-                      disabled={idx === form.questions.length - 1}
-                      className="p-1 hover:text-white disabled:opacity-20"
-                    >
-                      <ChevronDown className="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={form.questions.map(q => q.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {form.questions.map((q, idx) => (
+                  <SortableQuestionItem
+                    key={q.id}
+                    question={q}
+                    index={idx}
+                    isSelected={q.id === selectedQuestionId}
+                    onSelect={setSelectedQuestionId}
+                    onMove={handleMoveQuestion}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
 
           {/* Add question footer button */}

@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [newDescription, setNewDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
 
   const fetchForms = async () => {
     try {
@@ -74,10 +75,15 @@ export default function DashboardPage() {
   };
 
   const handleDelete = async (id: string, title: string) => {
-    if (!confirm(`Are you sure you want to delete "${title}"?`)) return;
+    setDeleteConfirm({ id, title });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
     try {
-      await api.deleteForm(id);
-      setForms((prev) => prev.filter((f) => f.id !== id));
+      await api.deleteForm(deleteConfirm.id);
+      setForms((prev) => prev.filter((f) => f.id !== deleteConfirm.id));
+      setDeleteConfirm(null);
     } catch (err) {
       alert("Failed to delete form");
     }
@@ -371,6 +377,35 @@ export default function DashboardPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Confirm Delete */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-sm rounded-3xl bg-[#16161b] border border-white/10 p-6 shadow-2xl space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-white">Delete form?</h3>
+              <p className="text-sm text-zinc-400 mt-2">
+                Are you sure you want to delete <strong className="text-zinc-200 font-medium">"{deleteConfirm.title}"</strong>? This action cannot be undone.
+              </p>
+            </div>
+            
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 text-xs font-medium text-zinc-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="rounded-full bg-red-500/10 border border-red-500/20 px-5 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/20 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       )}

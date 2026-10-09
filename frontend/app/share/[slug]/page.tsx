@@ -26,6 +26,12 @@ function ShareRespondentContent() {
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const answersRef = useRef<Record<string, string>>({});
+  
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -70,7 +76,7 @@ function ShareRespondentContent() {
   // Validate current question answer
   const validateCurrent = (): boolean => {
     if (!currentQ) return true;
-    const val = (answers[currentQ.id] || "").trim();
+    const val = (answersRef.current[currentQ.id] || "").trim();
 
     if (currentQ.is_required && !val) {
       triggerShake("Please answer this question to proceed.");
@@ -103,7 +109,7 @@ function ShareRespondentContent() {
 
     try {
       setIsSubmitting(true);
-      const formattedAnswers = Object.entries(answers).map(([qId, text]) => ({
+      const formattedAnswers = Object.entries(answersRef.current).map(([qId, text]) => ({
         question_id: qId,
         answer_text: text,
       }));
